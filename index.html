@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ตารางเวร</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+Thai:wght@600;700&family=Sarabun:wght@400;500;600;700&family=JetBrains+Mono:wght@500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div class="wrap">
+  <header class="top">
+    <div class="title-block">
+      <h1>ตารางเวร</h1>
+      <p>หาตังค์เลี้ยงลูกๆเลี้ยงน้องด้วยนะ</p>
+    </div>
+    <div class="nav">
+      <button id="prevMonth" aria-label="เดือนก่อนหน้า">‹</button>
+      <div class="month-label" id="monthLabel"></div>
+      <button id="nextMonth" aria-label="เดือนถัดไป">›</button>
+      <button class="today-btn" id="gotoToday">วันนี้</button>
+      <button class="today-btn" id="btnSettings">⚙ ตั้งค่า</button>
+    </div>
+  </header>
+
+  <div class="cal-card">
+    <div class="weekday-row">
+      <span class="sun">อา</span><span>จ</span><span>อ</span><span>พ</span><span>พฤ</span><span>ศ</span><span class="sat">ส</span>
+    </div>
+    <div class="board" id="board"></div>
+  </div>
+
+  <p class="legend-hint">จิ้มไปวางข้างบนได้เลย</p>
+  <div class="legend" id="legend"></div>
+</div>
+
+<!-- ลบเวร -->
+<div class="overlay" id="overlay">
+  <div class="modal">
+    <h2>ลบเวรนี้?</h2>
+    <p class="modal-date" id="modalDate"></p>
+    <div class="modal-actions">
+      <button class="btn-cancel" id="btnCancel">ยกเลิก</button>
+      <button class="btn-delete-solid" id="btnDelete">ลบเวร</button>
+    </div>
+  </div>
+</div>
+
+<!-- ตั้งค่า: เพิ่ม/ลบ/แก้ไขปุ่มเวรได้ไม่จำกัด -->
+<div class="overlay" id="settingsOverlay">
+  <div class="modal settings-modal">
+    <h2>ตั้งค่าปุ่มเวร</h2>
+    <p class="modal-date">เพิ่มปุ่มได้ตามต้องการ แก้ข้อความ เวลา และสีของแต่ละปุ่ม</p>
+    <div class="settings-list" id="settingsList"></div>
+    <button class="btn-add-type" id="btnAddType">+ เพิ่มปุ่มเวร</button>
+    <div class="modal-actions">
+      <button class="btn-cancel" id="btnCloseSettings">เสร็จแล้ว</button>
+    </div>
+  </div>
+</div>
+
+<script src="script.js"></script>
+</body>
+</html>
