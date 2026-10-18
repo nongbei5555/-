@@ -21,7 +21,7 @@
       <div class="month-label" id="monthLabel"></div>
       <button id="nextMonth" aria-label="เดือนถัดไป">›</button>
       <button class="today-btn" id="gotoToday">วันนี้</button>
-      <button class="today-btn" id="btnSettings">⚙ ตั้งค่า</button>
+      <button class="today-btn" id="btnSettings">ตั้งค่า</button>
     </div>
   </header>
 
@@ -34,25 +34,78 @@
 
   <p class="legend-hint">จิ้มไปวางข้างบนได้เลย</p>
   <div class="legend" id="legend"></div>
+
+  <!-- เพิ่ม: สรุปเวลาทำงานและรายได้รายเดือน -->
+  <section class="summary-card">
+    <div class="summary-heading">
+      <h2>สรุปงานและรายได้</h2>
+      <p id="summaryMonth"></p>
+    </div>
+
+    <div class="summary-stats">
+      <div class="summary-stat">
+        <span>ชั่วโมงทำงานรวม</span>
+        <strong id="summaryHours">0 ชั่วโมง</strong>
+      </div>
+      <div class="summary-stat">
+        <span>จำนวนเวร</span>
+        <strong id="summaryShifts">0 เวร</strong>
+      </div>
+      <div class="summary-stat">
+        <span>รายได้รวม</span>
+        <strong id="summaryIncome">0 บาท</strong>
+      </div>
+    </div>
+
+    <div class="income-breakdown">
+      <h3>รายได้แยกตามประเภทเวร</h3>
+      <div id="summaryBreakdown">
+        <p class="empty-summary">ยังไม่มีข้อมูลรายได้ในเดือนนี้</p>
+      </div>
+    </div>
+  </section>
 </div>
 
-<!-- ลบเวร -->
+<!-- รายละเอียดเวรและรายได้ -->
 <div class="overlay" id="overlay">
-  <div class="modal">
-    <h2>ลบเวรนี้?</h2>
+  <div class="modal shift-modal">
+    <h2>รายละเอียดเวร</h2>
     <p class="modal-date" id="modalDate"></p>
-    <div class="modal-actions">
-      <button class="btn-cancel" id="btnCancel">ยกเลิก</button>
+
+    <div id="shiftDetails" class="shift-details"></div>
+
+    <label class="field-row" id="caseCountField">
+      จำนวนเคส
+      <input id="shiftCaseCount" type="number" min="1" step="1" value="1">
+    </label>
+
+    <label class="field-row">
+      รายได้จริง (บาท)
+      <input
+        id="shiftIncomeOverride"
+        type="number"
+        min="0"
+        step="0.01"
+        placeholder="เว้นว่างเพื่อคำนวณตามอัตรา"
+      >
+      <small>กรอกยอดจริงเพื่อแทนยอดคำนวณ หรือเว้นว่างไว้เพื่อใช้อัตราที่ตั้งค่า</small>
+    </label>
+
+    <p id="shiftPayPreview" class="shift-pay-preview"></p>
+
+    <div class="modal-actions shift-modal-actions">
+      <button class="btn-cancel" id="btnCancel">ปิด</button>
+      <button class="btn-save-shift" id="btnSaveShift">บันทึก</button>
       <button class="btn-delete-solid" id="btnDelete">ลบเวร</button>
     </div>
   </div>
 </div>
 
-<!-- ตั้งค่า: เพิ่ม/ลบ/แก้ไขปุ่มเวรได้ไม่จำกัด -->
+<!-- ตั้งค่า: เพิ่ม/ลบ/แก้ไขปุ่มเวร และตั้งอัตราค่าตอบแทน -->
 <div class="overlay" id="settingsOverlay">
   <div class="modal settings-modal">
     <h2>ตั้งค่าปุ่มเวร</h2>
-    <p class="modal-date">เพิ่มปุ่มได้ตามต้องการ แก้ข้อความ เวลา และสีของแต่ละปุ่ม</p>
+    <p class="modal-date">เพิ่มปุ่มได้ตามต้องการ แก้ข้อความ เวลา สี และอัตราค่าตอบแทนของแต่ละปุ่ม</p>
     <div class="settings-list" id="settingsList"></div>
     <button class="btn-add-type" id="btnAddType">+ เพิ่มปุ่มเวร</button>
     <div class="modal-actions">
