@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>ตารางเวร</title>
+<title>ตารางเวลางาน</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+Thai:wght@600;700&family=Sarabun:wght@400;500;600;700&family=JetBrains+Mono:wght@500;600&display=swap" rel="stylesheet">
@@ -13,15 +13,15 @@
 <div class="wrap">
   <header class="top">
     <div class="title-block">
-      <h1>ตารางเวร</h1>
-      <p>หาตังค์เลี้ยงลูกๆเลี้ยงน้องด้วยนะ</p>
+      <h1>ตารางลงเวลางาน</h1>
+      <p>เลือกเวลาด้านล่างมาวางในปฏิทินง่ายขึ้น</p>
     </div>
     <div class="nav">
       <button id="prevMonth" aria-label="เดือนก่อนหน้า">‹</button>
       <div class="month-label" id="monthLabel"></div>
       <button id="nextMonth" aria-label="เดือนถัดไป">›</button>
       <button class="today-btn" id="gotoToday">วันนี้</button>
-      <button class="today-btn" id="btnSettings">ตั้งค่า</button>
+      <button class="today-btn" id="btnSettings">แก้ไข</button>
     </div>
   </header>
 
@@ -88,7 +88,7 @@
         step="0.01"
         placeholder="เว้นว่างเพื่อคำนวณตามอัตรา"
       >
-      <small>กรอกยอดจริงเพื่อแทนยอดคำนวณ หรือเว้นว่างไว้เพื่อใช้อัตราที่ตั้งค่า</small>
+      <small>กรอกยอดจริงเพื่อแทนยอดคำนวณ หรือว่างไว้เพื่อใช้อัตราที่ตั้งค่า</small>
     </label>
 
     <p id="shiftPayPreview" class="shift-pay-preview"></p>
