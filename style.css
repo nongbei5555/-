@@ -366,3 +366,319 @@ body{
   .legend-btn i{width:9px;height:9px;}
   .settings-modal{max-height:85dvh;overflow-y:auto;}
 }
+/* ===== เพิ่ม: สรุปชั่วโมงทำงานและรายได้ ===== */
+.summary-card{
+  margin:22px 0 18px;
+  padding:18px;
+  background:var(--paper);
+  border:1px solid var(--paper-edge);
+  border-radius:16px;
+  box-shadow:0 12px 30px rgba(0,0,0,0.18);
+}
+
+.summary-heading{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  gap:10px;
+  flex-wrap:wrap;
+  margin-bottom:14px;
+}
+
+.summary-heading h2{
+  font-family:'Noto Serif Thai',serif;
+  font-size:20px;
+  margin:0;
+  color:var(--ink);
+}
+
+.summary-heading p{
+  margin:0;
+  color:var(--ink-soft);
+  font-size:14px;
+}
+
+.summary-stats{
+  display:grid;
+  grid-template-columns:repeat(3,minmax(0,1fr));
+  gap:10px;
+}
+
+.summary-stat{
+  display:flex;
+  flex-direction:column;
+  gap:8px;
+  min-width:0;
+  padding:14px;
+  border:1px solid var(--paper-edge);
+  border-radius:10px;
+  background:#fffdf7;
+}
+
+.summary-stat span{
+  color:var(--ink-soft);
+  font-size:13px;
+}
+
+.summary-stat strong{
+  font-size:clamp(15px,2.4vw,22px);
+  overflow-wrap:anywhere;
+  color:var(--board-1);
+}
+
+.summary-stat:last-child strong{
+  color:#1f8a82;
+}
+
+.income-breakdown{
+  margin-top:20px;
+}
+
+.income-breakdown h3{
+  font-family:'Noto Serif Thai',serif;
+  font-size:16px;
+  margin:0 0 10px;
+}
+
+.income-row{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:12px;
+  flex-wrap:wrap;
+  padding:12px 0;
+  border-bottom:1px dashed var(--paper-edge);
+}
+
+.income-row:last-child{
+  border-bottom:none;
+}
+
+.income-type{
+  display:flex;
+  align-items:center;
+  gap:8px;
+  font-weight:600;
+  overflow-wrap:anywhere;
+}
+
+.income-dot{
+  display:inline-block;
+  width:10px;
+  height:10px;
+  border-radius:50%;
+  flex-shrink:0;
+}
+
+.income-meta{
+  display:flex;
+  align-items:center;
+  gap:12px;
+  flex-wrap:wrap;
+  font-size:13px;
+  color:var(--ink-soft);
+}
+
+.income-meta strong{
+  color:var(--board-1);
+  font-size:14px;
+}
+
+.empty-summary{
+  margin:0;
+  color:var(--ink-soft);
+  font-size:13px;
+}
+
+/* ===== เพิ่ม: ช่องบันทึกรายได้ของเวร ===== */
+.shift-modal{
+  max-width:420px;
+  text-align:left;
+  max-height:90vh;
+  overflow-y:auto;
+}
+
+.shift-modal h2{
+  text-align:center;
+}
+
+.shift-modal .modal-date{
+  text-align:center;
+  margin-bottom:12px;
+}
+
+.shift-details{
+  padding:10px 12px;
+  border-radius:8px;
+  background:#fffdf7;
+  border:1px solid var(--paper-edge);
+}
+
+.shift-details > div{
+  display:flex;
+  justify-content:space-between;
+  gap:12px;
+  padding:5px 0;
+  font-size:13px;
+}
+
+.shift-details > div span{
+  color:var(--ink-soft);
+}
+
+.shift-details > div strong{
+  text-align:right;
+  overflow-wrap:anywhere;
+}
+
+.field-row{
+  display:flex;
+  flex-direction:column;
+  gap:6px;
+  margin-top:14px;
+  font-size:13px;
+  font-weight:600;
+  color:var(--ink);
+}
+
+.field-row input{
+  width:100%;
+  min-height:38px;
+  padding:8px 10px;
+  border:1px solid var(--paper-edge);
+  border-radius:7px;
+  background:#fffdf7;
+  color:var(--ink);
+  font-family:'Sarabun',sans-serif;
+  font-size:14px;
+}
+
+.field-row input:focus,
+.pay-group input:focus,
+.pay-group select:focus{
+  outline:2px solid rgba(31,138,130,0.25);
+  border-color:#1f8a82;
+}
+
+.field-row small{
+  color:var(--ink-soft);
+  font-size:11px;
+  font-weight:400;
+  line-height:1.5;
+}
+
+.shift-pay-preview{
+  margin:14px 0 0;
+  padding:10px;
+  border-radius:8px;
+  background:#e7f2eb;
+  color:#225c42;
+  font-weight:700;
+  font-size:14px;
+}
+
+.shift-modal-actions{
+  gap:6px;
+}
+
+.shift-modal-actions button{
+  min-width:0;
+  padding:9px 5px;
+  font-size:12px;
+}
+
+.btn-save-shift{
+  flex:1;
+  border:none;
+  border-radius:8px;
+  background:#1f8a82;
+  color:#fff;
+  font-family:'Sarabun',sans-serif;
+  font-weight:600;
+  cursor:pointer;
+}
+
+.btn-save-shift:hover{
+  background:#176e68;
+}
+
+/* ===== เพิ่ม: ตั้งค่าอัตราค่าตอบแทน ===== */
+.settings-row .pay-group{
+  display:flex;
+  align-items:center;
+  gap:5px;
+}
+
+.settings-row .pay-group select{
+  width:112px;
+  max-width:100%;
+  padding:6px;
+  border:1px solid var(--paper-edge);
+  border-radius:6px;
+  background:#fffdf7;
+  color:var(--ink);
+  font-family:'Sarabun',sans-serif;
+  font-size:12px;
+}
+
+.settings-row .pay-group input[type=number]{
+  width:88px;
+  min-width:0;
+  padding:6px;
+  border:1px solid var(--paper-edge);
+  border-radius:6px;
+  background:#fffdf7;
+  color:var(--ink);
+  font-family:'JetBrains Mono',monospace;
+  font-size:12px;
+}
+
+@media (max-width:680px){
+  .summary-card{
+    padding:12px;
+    margin-top:16px;
+  }
+
+  .summary-stats{
+    grid-template-columns:1fr;
+    gap:7px;
+  }
+
+  .summary-stat{
+    padding:10px 12px;
+    gap:4px;
+  }
+
+  .summary-stat strong{
+    font-size:18px;
+  }
+
+  .income-row{
+    align-items:flex-start;
+    flex-direction:column;
+    gap:6px;
+  }
+
+  .income-meta{
+    gap:10px;
+  }
+
+  .shift-modal{
+    padding:18px 14px;
+  }
+
+  .settings-row .pay-group{
+    flex:1 1 100%;
+    margin-left:36px;
+  }
+
+  .settings-row .pay-group select{
+    flex:1;
+    width:auto;
+  }
+
+
+  .settings-row .pay-group input[type=number]{
+    width:100px;
+  }
+}
