@@ -39,7 +39,6 @@
 
   const summaryMonth = document.getElementById('summaryMonth');
   const summaryHours = document.getElementById('summaryHours');
-  const summaryShifts = document.getElementById('summaryShifts');
   const summaryIncome = document.getElementById('summaryIncome');
   const summaryBreakdown = document.getElementById('summaryBreakdown');
 
@@ -72,7 +71,7 @@
   function normalizeType(t){
     return {
       ...t,
-      payMode: ['hourly','shift','case'].includes(t.payMode) ? t.payMode : 'hourly',
+      payMode: ['hourly','shift','day','case'].includes(t.payMode) ? t.payMode : 'hourly',
       rate: Number.isFinite(Number(t.rate)) ? Number(t.rate) : 0
     };
   }
@@ -170,10 +169,11 @@
     });
   }
 
-  function getPayModeText(mode){
-    if(mode === 'shift') return 'บาทต่อเวร';
-    if(mode === 'case') return 'บาทต่อเคส';
-    return 'บาทต่อชั่วโมง';
+ function getPayModeText(mode){
+  if(mode === 'shift') return 'บาทต่อเวร';
+  if(mode === 'day') return 'บาทต่อวัน';
+  if(mode === 'case') return 'บาทต่อเคส';
+  return 'บาทต่อชั่วโมง';
   }
 
   // คำนวณรายได้ของเวรแต่ละรายการ
@@ -196,7 +196,7 @@
 
     let calculatedIncome = 0;
 
-    if(mode === 'shift'){
+    if(mode === 'shift' || mode === 'day'){
       calculatedIncome = rate;
     }else if(mode === 'case'){
       calculatedIncome = rate * cases;
@@ -278,7 +278,6 @@
 
     let totalHours = 0;
     let totalIncome = 0;
-    let totalShiftCount = 0;
     const breakdown = {};
 
     Object.entries(shifts).forEach(([key, dayShifts]) => {
@@ -291,26 +290,22 @@
 
         totalHours += result.hours;
         totalIncome += result.income;
-        totalShiftCount++;
 
         if(!breakdown[groupKey]){
           breakdown[groupKey] = {
             label:type.label,
             color:type.color,
-            count:0,
             hours:0,
             income:0
           };
         }
 
-        breakdown[groupKey].count++;
         breakdown[groupKey].hours += result.hours;
         breakdown[groupKey].income += result.income;
       });
     });
 
     summaryHours.textContent = money(totalHours) + ' ชั่วโมง';
-    summaryShifts.textContent = totalShiftCount + ' เวร';
     summaryIncome.textContent = money(totalIncome) + ' บาท';
 
     const rows = Object.values(breakdown);
@@ -328,14 +323,13 @@
           <span>${escapeHtml(item.label)}</span>
         </div>
         <div class="income-meta">
-          <span>${money(item.count)} เวร</span>
-          <span>${money(item.hours)} ชม.</span>
+          <span>${money(item.hours)} ชั่วโมง</span>
           <strong>${money(item.income)} บาท</strong>
         </div>
       </div>
     `).join('');
   }
-
+  
   function render(){
     const y = viewDate.getFullYear();
     const m = viewDate.getMonth();
@@ -627,6 +621,7 @@
       payModeSelect.innerHTML = `
         <option value="hourly">บาท/ชั่วโมง</option>
         <option value="shift">บาท/เวร</option>
+        <option value="day">บาท/วัน</option>
         <option value="case">บาท/เคส</option>
       `;
       payModeSelect.value = t.payMode || 'hourly';
@@ -757,4 +752,4 @@
   loadShifts();
   renderLegend();
   render();
-})();
+  })();
