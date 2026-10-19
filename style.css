@@ -1,6 +1,6 @@
 :root{
-  --board-1:#2b3b33;
-  --board-2:#254034;
+  --board-1:#3c6265;
+  --board-2:#608b78;
   --paper:#f6f1e4;
   --paper-edge:#e6ddc4;
   --ink:#24291f;
@@ -400,7 +400,7 @@ body{
 
 .summary-stats{
   display:grid;
-  grid-template-columns:repeat(3,minmax(0,1fr));
+  grid-template-columns:repeat(2,minmax(0,1fr));
   gap:10px;
 }
 
