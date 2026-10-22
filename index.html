@@ -25,41 +25,57 @@
     </div>
   </header>
 
-  <div class="cal-card">
-    <div class="weekday-row">
-      <span class="sun">อา</span><span>จ</span><span>อ</span><span>พ</span><span>พฤ</span><span>ศ</span><span class="sat">ส</span>
+  <!-- เพิ่ม: แท็บสลับหน้า -->
+  <nav class="tabs" id="tabs">
+    <button class="tab active" data-view="calendar">ปฏิทิน</button>
+    <button class="tab" data-view="summary">สรุป</button>
+  </nav>
+
+  <!-- หน้าปฏิทิน (ของเดิม) -->
+  <div id="viewCalendar">
+    <div class="cal-card">
+      <div class="weekday-row">
+        <span class="sun">อา</span><span>จ</span><span>อ</span><span>พ</span><span>พฤ</span><span>ศ</span><span class="sat">ส</span>
+      </div>
+      <div class="board" id="board"></div>
     </div>
-    <div class="board" id="board"></div>
+
+    <p class="legend-hint">จิ้มไปวางข้างบนได้เลย</p>
+    <div class="legend" id="legend"></div>
+    <button class="btn-add-event" id="btnAddEvent">+ เพิ่มนัดหมาย</button>
   </div>
 
-  <p class="legend-hint">จิ้มไปวางข้างบนได้เลย</p>
-  <div class="legend" id="legend"></div>
-
-  <!-- เพิ่ม: สรุปเวลาทำงานและรายได้รายเดือน -->
-  <section class="summary-card">
-    <div class="summary-heading">
-      <h2>สรุปชั่วโมงงานและรายได้</h2>
-      <p id="summaryMonth"></p>
-    </div>
-
-    <div class="summary-stats">
-      <div class="summary-stat">
-        <span>ชั่วโมงทำงานรวม</span>
-        <strong id="summaryHours">0 ชั่วโมง</strong>
+  <!-- หน้าสรุป (ย้ายมาจากใต้ปฏิทิน) -->
+  <div id="viewSummary" hidden>
+    <section class="summary-card">
+      <div class="summary-heading">
+        <h2>สรุปชั่วโมงงานและรายได้</h2>
+        <div class="summary-pick">
+          <select id="summaryMonthSel" aria-label="เดือน"></select>
+          <select id="summaryYearSel" aria-label="ปี"></select>
+        </div>
       </div>
-      <div class="summary-stat">
-        <span>รายได้รวม</span>
-        <strong id="summaryIncome">0 บาท</strong>
-      </div>
-    </div>
+      <p id="summaryMonth" class="summary-month"></p>
 
-    <div class="income-breakdown">
-      <h3>รายได้แยกตามประเภทเวร</h3>
-      <div id="summaryBreakdown">
-        <p class="empty-summary">ยังไม่มีข้อมูลรายได้ในเดือนนี้</p>
+      <div class="summary-stats">
+        <div class="summary-stat">
+          <span>ชั่วโมงทำงานรวม</span>
+          <strong id="summaryHours">0 ชั่วโมง</strong>
+        </div>
+        <div class="summary-stat">
+          <span>รายได้รวม</span>
+          <strong id="summaryIncome">0 บาท</strong>
+        </div>
       </div>
-    </div>
-  </section>
+
+      <div class="income-breakdown">
+        <h3>รายได้แยกตามประเภทเวร</h3>
+        <div id="summaryBreakdown">
+          <p class="empty-summary">ยังไม่มีข้อมูลรายได้ในเดือนนี้</p>
+        </div>
+      </div>
+    </section>
+  </div>
 </div>
 
 <!-- รายละเอียดเวรและรายได้ -->
@@ -87,6 +103,13 @@
       <small>กรอกยอดจริงเพื่อแทนยอดคำนวณ หรือว่างไว้เพื่อใช้อัตราที่ตั้งค่า</small>
     </label>
 
+    <!-- เพิ่ม: การแจ้งเตือนของเวร -->
+    <label class="check-row"><input type="checkbox" id="shiftNotify"> แจ้งเตือนก่อนเข้าเวร</label>
+    <label class="field-row">
+      แจ้งล่วงหน้า
+      <select id="shiftLead"></select>
+    </label>
+
     <p id="shiftPayPreview" class="shift-pay-preview"></p>
 
     <div class="modal-actions shift-modal-actions">
@@ -106,6 +129,43 @@
     <button class="btn-add-type" id="btnAddType">+ เพิ่มปุ่มเวร</button>
     <div class="modal-actions">
       <button class="btn-cancel" id="btnCloseSettings">เสร็จแล้ว</button>
+    </div>
+  </div>
+</div>
+
+<!-- เพิ่ม: นัดหมาย -->
+<div class="overlay" id="eventOverlay">
+  <div class="modal shift-modal">
+    <h2 id="evHeading">เพิ่มนัดหมาย</h2>
+    <label class="field-row">ชื่อกิจกรรม
+      <input id="evTitle" type="text" maxlength="60" placeholder="เช่น นัดแพทย์">
+    </label>
+    <label class="field-row">วันที่ (ตั้งแต่)
+      <input id="evDate" type="date">
+    </label>
+    <label class="field-row" id="evEndDateRow">ถึงวันที่ (ใส่เมื่อเป็นช่วงหลายวัน)
+      <input id="evEndDate" type="date">
+    </label>
+    <label class="field-row">เวลาเริ่มต้น
+      <input id="evStart" type="time">
+    </label>
+    <label class="field-row">เวลาสิ้นสุด
+      <input id="evEnd" type="time">
+    </label>
+    <label class="field-row">สี
+      <input id="evColor" type="color" value="#6b7a8f">
+    </label>
+    <label class="check-row"><input type="checkbox" id="evNotify"> เปิดการแจ้งเตือน</label>
+    <label class="field-row">
+      แจ้งล่วงหน้า
+      <select id="evLead"></select>
+    </label>
+    <p id="evError" class="ev-error"></p>
+    <div class="modal-actions shift-modal-actions">
+      <button class="btn-cancel" id="evCancel">ปิด</button>
+      <button class="btn-save-shift" id="evSave">บันทึก</button>
+      <button class="btn-delete-solid" id="evDelete">ลบ</button>
+      <button class="btn-delete-solid" id="evDeleteAll">ลบทั้งช่วง</button>
     </div>
   </div>
 </div>
