@@ -16,6 +16,9 @@
     '#d9a441','#4f9e5f','#c15a9b','#4f8ec1'
   ];
 
+  // เพิ่ม: ตัวเลือกเวลาแจ้งเตือนล่วงหน้า (นาที)
+  const LEAD_OPTIONS = [[10,'10 นาที'],[30,'30 นาที'],[60,'1 ชั่วโมง'],[1440,'1 วัน']];
+
   const board = document.getElementById('board');
   const monthLabel = document.getElementById('monthLabel');
   const legend = document.getElementById('legend');
@@ -42,6 +45,26 @@
   const summaryIncome = document.getElementById('summaryIncome');
   const summaryBreakdown = document.getElementById('summaryBreakdown');
 
+  // เพิ่ม: องค์ประกอบของฟีเจอร์ใหม่
+  const summaryMonthSel = document.getElementById('summaryMonthSel');
+  const summaryYearSel = document.getElementById('summaryYearSel');
+  const shiftNotify = document.getElementById('shiftNotify');
+  const shiftLead = document.getElementById('shiftLead');
+  const eventOverlay = document.getElementById('eventOverlay');
+  const evHeading = document.getElementById('evHeading');
+  const evTitle = document.getElementById('evTitle');
+  const evDate = document.getElementById('evDate');
+  const evStart = document.getElementById('evStart');
+  const evEnd = document.getElementById('evEnd');
+  const evColor = document.getElementById('evColor');
+  const evNotify = document.getElementById('evNotify');
+  const evLead = document.getElementById('evLead');
+  const evError = document.getElementById('evError');
+  const evDelete = document.getElementById('evDelete');
+  const evEndDate = document.getElementById('evEndDate');
+  const evEndDateRow = document.getElementById('evEndDateRow');
+  const evDeleteAll = document.getElementById('evDeleteAll');
+
   let viewDate = new Date();
   viewDate.setDate(1);
 
@@ -49,6 +72,14 @@
 
   let shifts = {};
   let idCounter = 1;
+
+  // เพิ่ม: นัดหมายเก็บแยกจากเวร (ชนิด 'event') เพื่อไม่ถูกนำไปคำนวณรายได้
+  let events = {};
+  let notified = [];
+  let pendingEvKey = null;
+  let pendingEvId = null;
+  let summaryYear = new Date().getFullYear();
+  let summaryMonthIdx = new Date().getMonth();
 
   let types = loadTypes();
   let activeTypeId = types[0] ? types[0].id : null;
@@ -110,6 +141,10 @@
           if(typeof s.id === 'number' && s.id >= idCounter){
             idCounter = s.id + 1;
           }
+          // เพิ่ม: ค่าเริ่มต้นสำหรับข้อมูลเก่าที่ยังไม่มีฟิลด์ใหม่
+          s.kind = 'work';
+          s.notify = s.notify === true;
+          s.leadMinutes = LEAD_OPTIONS.some(l => l[0] === Number(s.leadMinutes)) ? Number(s.leadMinutes) : 30;
         });
       });
     }catch(e){
@@ -122,6 +157,28 @@
       localStorage.setItem('shift-schedule-data', JSON.stringify(shifts));
     }catch(e){
       console.error('บันทึกตารางไม่สำเร็จ', e);
+    }
+  }
+
+  // เพิ่ม: โหลด/บันทึกนัดหมาย
+  function loadEvents(){
+    try{
+      const raw = localStorage.getItem('shift-events');
+      events = raw ? JSON.parse(raw) : {};
+      if(!events || typeof events !== 'object' || Array.isArray(events)) events = {};
+      notified = JSON.parse(localStorage.getItem('shift-notified') || '[]');
+      if(!Array.isArray(notified)) notified = [];
+    }catch(e){
+      events = {};
+      notified = [];
+    }
+  }
+
+  function saveEvents(){
+    try{
+      localStorage.setItem('shift-events', JSON.stringify(events));
+    }catch(e){
+      console.error('บันทึกนัดหมายไม่สำเร็จ', e);
     }
   }
 
@@ -232,11 +289,14 @@
 
     shifts[key].push({
       id:idCounter++,
+      kind:'work',
       typeId:typeId,
       start:t.start,
       end:t.end,
       caseCount:1,
-      incomeOverride:null
+      incomeOverride:null,
+      notify:false,
+      leadMinutes:30
     });
 
     saveShifts();
@@ -268,10 +328,10 @@
     if(btn) selectType(btn.dataset.typeId);
   });
 
-  // สรุปชั่วโมงและรายได้เฉพาะเดือนที่กำลังเปิดดู
+  // สรุปชั่วโมงและรายได้ของเดือนที่เลือกในหน้าสรุป (นับเฉพาะ work)
   function renderSummary(){
-    const year = viewDate.getFullYear();
-    const month = viewDate.getMonth();
+    const year = summaryYear;
+    const month = summaryMonthIdx;
     const monthPrefix = year + '-' + String(month + 1).padStart(2,'0') + '-';
 
     summaryMonth.textContent = THAI_MONTHS[month] + ' ' + (year + 543);
@@ -284,6 +344,8 @@
       if(!key.startsWith(monthPrefix)) return;
 
       (dayShifts || []).forEach(shift => {
+        if(shift.kind === 'event') return;
+
         const result = getShiftPay(shift);
         const type = typeDisplay(shift.typeId);
         const groupKey = shift.typeId || 'unknown';
@@ -329,7 +391,32 @@
       </div>
     `).join('');
   }
-  
+
+  // เพิ่ม: ตัวเลือกเดือน/ปีของหน้าสรุป
+  function initSummaryPicker(){
+    summaryMonthSel.innerHTML = THAI_MONTHS
+      .map((m,i) => '<option value="'+i+'">'+m+'</option>').join('');
+
+    const cy = new Date().getFullYear();
+    let opts = '';
+    for(let y = cy - 5; y <= cy + 2; y++){
+      opts += '<option value="'+y+'">'+(y + 543)+'</option>';
+    }
+    summaryYearSel.innerHTML = opts;
+
+    summaryMonthSel.value = String(summaryMonthIdx);
+    summaryYearSel.value = String(summaryYear);
+
+    summaryMonthSel.addEventListener('change', () => {
+      summaryMonthIdx = Number(summaryMonthSel.value);
+      renderSummary();
+    });
+    summaryYearSel.addEventListener('change', () => {
+      summaryYear = Number(summaryYearSel.value);
+      renderSummary();
+    });
+  }
+
   function render(){
     const y = viewDate.getFullYear();
     const m = viewDate.getMonth();
@@ -396,6 +483,22 @@
         chip.addEventListener('click', e => {
           e.stopPropagation();
           openDeleteModal(key, s.id);
+        });
+
+        list.appendChild(chip);
+      });
+
+      // เพิ่ม: แสดงนัดหมายในวันนั้น
+      (events[key] || []).forEach(ev => {
+        const chip = document.createElement('div');
+
+        chip.className = 'chip event-chip';
+        chip.style.setProperty('--chip-color', ev.color);
+        chip.innerHTML = '<span class="n">◆ ' + escapeHtml(ev.title) + '</span>';
+
+        chip.addEventListener('click', e => {
+          e.stopPropagation();
+          openEventModal(key, ev.id);
         });
 
         list.appendChild(chip);
@@ -482,6 +585,10 @@
         ? shift.incomeOverride
         : '';
 
+    // เพิ่ม: โหลดค่าการแจ้งเตือนของเวร
+    shiftNotify.checked = shift.notify === true;
+    shiftLead.value = String(shift.leadMinutes || 30);
+
     updateShiftPayPreview();
     overlay.classList.add('show');
   }
@@ -524,6 +631,10 @@
 
       shift.incomeOverride = value;
     }
+
+    // เพิ่ม: บันทึกการแจ้งเตือนของเวร
+    shift.notify = shiftNotify.checked;
+    shift.leadMinutes = Number(shiftLead.value) || 30;
 
     saveShifts();
     closeModal();
@@ -749,7 +860,220 @@
     render();
   });
 
+  /* ===================== ส่วนที่เพิ่มใหม่ ===================== */
+
+  // ตัวเลือกเวลาแจ้งเตือนล่วงหน้า
+  [shiftLead, evLead].forEach(sel => {
+    sel.innerHTML = LEAD_OPTIONS
+      .map(l => '<option value="'+l[0]+'">'+l[1]+'</option>').join('');
+    sel.value = '30';
+  });
+
+  // ---- นัดหมาย ----
+  function openEventModal(key, id){
+    pendingEvKey = key || null;
+    pendingEvId = id || null;
+
+    const ev = id ? (events[key] || []).find(x => x.id === id) : null;
+
+    evHeading.textContent = ev ? 'แก้ไขนัดหมาย' : 'เพิ่มนัดหมาย';
+    evTitle.value = ev ? ev.title : '';
+    evDate.value = ev ? key : fmtKey(new Date());
+    evStart.value = ev ? ev.start : '09:00';
+    evEnd.value = ev ? ev.end : '10:00';
+    evColor.value = ev ? ev.color : '#6b7a8f';
+    evNotify.checked = ev ? ev.notify === true : true;
+    evLead.value = String(ev ? ev.leadMinutes : 30);
+    evError.textContent = '';
+    evDelete.style.display = ev ? '' : 'none';
+    evEndDate.value = '';
+    evEndDateRow.style.display = ev ? 'none' : '';
+    evDeleteAll.style.display = (ev && ev.groupId && countGroup(ev.groupId) > 1) ? '' : 'none';
+
+    eventOverlay.classList.add('show');
+  }
+
+  function countGroup(gid){
+    let n = 0;
+    Object.values(events).forEach(arr => (arr || []).forEach(x => { if(x.groupId === gid) n++; }));
+    return n;
+  }
+
+  function removeGroup(gid){
+    Object.keys(events).forEach(k => {
+      events[k] = (events[k] || []).filter(x => x.groupId !== gid);
+      if(events[k].length === 0) delete events[k];
+    });
+  }
+
+  function closeEventModal(){
+    eventOverlay.classList.remove('show');
+    pendingEvKey = null;
+    pendingEvId = null;
+  }
+
+  document.getElementById('btnAddEvent').addEventListener('click', () => openEventModal());
+  document.getElementById('evCancel').addEventListener('click', closeEventModal);
+
+  eventOverlay.addEventListener('click', e => {
+    if(e.target === eventOverlay) closeEventModal();
+  });
+
+    document.getElementById('evSave').addEventListener('click', () => {
+    const title = evTitle.value.trim();
+
+    if(!title){ evError.textContent = 'กรุณากรอกชื่อกิจกรรม'; return; }
+    if(!/^\d{4}-\d{2}-\d{2}$/.test(evDate.value)){ evError.textContent = 'กรุณาเลือกวันที่'; return; }
+    if(!evStart.value || !evEnd.value){ evError.textContent = 'กรุณากรอกเวลาเริ่มต้นและสิ้นสุด'; return; }
+
+    const data = {
+      kind:'event',
+      title:title.slice(0,60),
+      start:evStart.value,
+      end:evEnd.value,
+      color:/^#[0-9a-fA-F]{6}$/.test(evColor.value) ? evColor.value : '#6b7a8f',
+      notify:evNotify.checked,
+      leadMinutes:Number(evLead.value) || 30
+    };
+
+    const lastDay = (!pendingEvId && evEndDate.value) ? evEndDate.value : evDate.value;
+
+    if(lastDay < evDate.value){
+      evError.textContent = 'วันที่สิ้นสุดต้องไม่ก่อนวันเริ่มต้น';
+      return;
+    }
+
+    const dayKeys = [];
+    const cur = new Date(evDate.value + 'T00:00:00');
+    while(fmtKey(cur) <= lastDay && dayKeys.length <= 31){
+      dayKeys.push(fmtKey(cur));
+      cur.setDate(cur.getDate() + 1);
+    }
+
+    if(dayKeys.length > 31){
+      evError.textContent = 'เลือกช่วงได้ไม่เกิน 31 วัน';
+      return;
+    }
+
+    let groupId = null;
+    if(pendingEvId){
+      const old = (events[pendingEvKey] || []).find(x => x.id === pendingEvId);
+      groupId = old && old.groupId ? old.groupId : null;
+      events[pendingEvKey] = (events[pendingEvKey] || []).filter(x => x.id !== pendingEvId);
+      if(events[pendingEvKey].length === 0) delete events[pendingEvKey];
+    }else if(dayKeys.length > 1){
+      groupId = uid('g');
+    }
+
+    dayKeys.forEach((k, i) => {
+      if(!events[k]) events[k] = [];
+      events[k].push({
+        ...data,
+        id:(pendingEvId && i === 0) ? pendingEvId : uid('e'),
+        groupId:groupId
+      });
+    });
+
+    saveEvents();
+    closeEventModal();
+    render();
+  });
+
+  // ---- การแจ้งเตือน (ทำงานเฉพาะตอนเปิดหน้าเว็บค้างไว้) ----
+  // ขอสิทธิ์เมื่อผู้ใช้ติ๊กเปิดการแจ้งเตือน (เบราว์เซอร์จะเด้งถามเอง)
+  function askNotifyPermission(){
+    if('Notification' in window && Notification.permission === 'default'){
+      Notification.requestPermission();
+    }
+  }
+
+  shiftNotify.addEventListener('change', () => {
+    if(shiftNotify.checked) askNotifyPermission();
+  });
+  evNotify.addEventListener('change', () => {
+    if(evNotify.checked) askNotifyPermission();
+  });
+
+  function showToast(msg){
+    const t = document.createElement('div');
+    t.className = 'toast';
+    t.textContent = msg;
+    document.body.appendChild(t);
+    setTimeout(() => t.remove(), 8000);
+  }
+
+  function startTimestamp(dateKey, time){
+    const a = dateKey.split('-').map(Number);
+    const b = time.split(':').map(Number);
+    return new Date(a[0], a[1]-1, a[2], b[0], b[1]).getTime();
+  }
+
+  function checkReminders(){
+    const now = Date.now();
+    const items = [];
+
+    Object.entries(shifts).forEach(([k, arr]) => (arr || []).forEach(s => {
+      if(s.notify){
+        items.push({id:'w'+s.id, title:typeDisplay(s.typeId).label, date:k, start:s.start, lead:s.leadMinutes});
+      }
+    }));
+
+    Object.entries(events).forEach(([k, arr]) => (arr || []).forEach(ev => {
+      if(ev.notify){
+        items.push({id:ev.id, title:ev.title, date:k, start:ev.start, lead:ev.leadMinutes});
+      }
+    }));
+
+    items.forEach(it => {
+      if(!/^\d{2}:\d{2}$/.test(it.start || '')) return;
+
+      const st = startTimestamp(it.date, it.start);
+      const trigger = st - (it.lead || 30) * 60000;
+      const tag = [it.id, it.date, it.start, it.lead].join('|');
+
+      if(now >= trigger && now < st && !notified.includes(tag)){
+        notified.push(tag);
+        notified = notified.slice(-300);
+
+        try{
+          localStorage.setItem('shift-notified', JSON.stringify(notified));
+        }catch(e){}
+
+        const msg = it.title + ' เริ่มเวลา ' + it.start + ' น.';
+
+        if('Notification' in window && Notification.permission === 'granted'){
+          new Notification('ตารางเวร', {body:msg, tag:tag});
+        }else{
+          showToast(msg);
+        }
+      }
+    });
+  }
+
+  // ---- แท็บ ปฏิทิน / สรุป ----
+  function showView(view){
+    document.getElementById('viewCalendar').hidden = view !== 'calendar';
+    document.getElementById('viewSummary').hidden = view !== 'summary';
+
+    document.querySelectorAll('.tab').forEach(b => {
+      b.classList.toggle('active', b.dataset.view === view);
+    });
+
+    document.querySelector('.nav').style.display = view === 'calendar' ? '' : 'none';
+
+    if(view === 'summary') renderSummary();
+  }
+
+  document.getElementById('tabs').addEventListener('click', e => {
+    const b = e.target.closest('.tab');
+    if(b) showView(b.dataset.view);
+  });
+
   loadShifts();
+  loadEvents();
+  initSummaryPicker();
   renderLegend();
   render();
+  checkReminders();
+  setInterval(checkReminders, 30000);
   })();
