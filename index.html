@@ -14,7 +14,7 @@
   <header class="top">
     <div class="title-block">
       <h1>ตารางลงเวลางาน</h1>
-      <p>เลือกเวลาด้านล่างมาวางในปฏิทินง่ายขึ้น</p>
+      <p>จิ้มเวลาข้างล่างมาแตะที่ปฏิทินเลย</p>
     </div>
     <div class="nav">
       <button id="prevMonth" aria-label="เดือนก่อนหน้า">‹</button>
@@ -134,39 +134,86 @@
 </div>
 
 <!-- เพิ่ม: นัดหมาย -->
+<!-- หน้าต่างเพิ่มและแก้ไขนัดหมาย -->
 <div class="overlay" id="eventOverlay">
   <div class="modal shift-modal">
+
     <h2 id="evHeading">เพิ่มนัดหมาย</h2>
-    <label class="field-row">ชื่อกิจกรรม
-      <input id="evTitle" type="text" maxlength="60" placeholder="เช่น นัดแพทย์">
+
+    <label class="field-row">
+      ชื่อกิจกรรม
+      <input id="evTitle" type="text" maxlength="60"
+             placeholder="เช่น นัดแพทย์">
     </label>
-    <label class="field-row">วันที่ (ตั้งแต่)
-      <input id="evDate" type="date">
+
+    <!-- วันที่: วัน / เดือน / ปี พ.ศ. -->
+    <label class="field-row">
+      วันที่
+      <input id="evDate" type="hidden">
+      <div class="date-fields">
+        <select id="evDateDay" aria-label="วัน"></select>
+        <select id="evDateMonth" aria-label="เดือน"></select>
+        <select id="evDateYear" aria-label="ปี พ.ศ."></select>
+      </div>
     </label>
-    <label class="field-row" id="evEndDateRow">ถึงวันที่ (ใส่เมื่อเป็นช่วงหลายวัน)
-      <input id="evEndDate" type="date">
+
+    <!-- วันที่สิ้นสุด: ไม่จำเป็นต้องกรอก -->
+    <label class="field-row" id="evEndDateRow">
+      ถึงวันที่ (ไม่ใส่ก็ได้)
+      <input id="evEndDate" type="hidden">
+      <div class="date-fields">
+        <select id="evEndDateDay" aria-label="วันสิ้นสุด"></select>
+        <select id="evEndDateMonth" aria-label="เดือนสิ้นสุด"></select>
+        <select id="evEndDateYear" aria-label="ปีสิ้นสุด พ.ศ."></select>
+      </div>
     </label>
-    <label class="field-row">เวลาเริ่มต้น
-      <input id="evStart" type="time">
-    </label>
-    <label class="field-row">เวลาสิ้นสุด
-      <input id="evEnd" type="time">
-    </label>
-    <label class="field-row">สี
+
+    <!-- เวลาเริ่มต้น-->
+    <label for="evStart">เวลาเริ่มต้น</label>
+    <input
+      type="time"
+      id="evStart"
+      lang="th-TH"
+      value="09:00"
+      step="60"
+      required
+    >
+
+    <!-- เวลาสิ้นสุด-->
+    <label for="evEnd">เวลาสิ้นสุด</label>
+    <input
+      type="time"
+      id="evEnd"
+      lang="th-TH"
+      value="10:00"
+      step="60"
+      required
+    >
+
+    <label class="field-row">
+      สี
       <input id="evColor" type="color" value="#6b7a8f">
     </label>
-    <label class="check-row"><input type="checkbox" id="evNotify"> เปิดการแจ้งเตือน</label>
+
+    <label class="check-row">
+      <input type="checkbox" id="evNotify">
+      เปิดการแจ้งเตือน
+    </label>
+
     <label class="field-row">
       แจ้งล่วงหน้า
       <select id="evLead"></select>
     </label>
+
     <p id="evError" class="ev-error"></p>
+
     <div class="modal-actions shift-modal-actions">
       <button class="btn-cancel" id="evCancel">ปิด</button>
       <button class="btn-save-shift" id="evSave">บันทึก</button>
       <button class="btn-delete-solid" id="evDelete">ลบ</button>
       <button class="btn-delete-solid" id="evDeleteAll">ลบทั้งช่วง</button>
     </div>
+
   </div>
 </div>
 
