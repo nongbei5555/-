@@ -4,12 +4,7 @@
     "กรกฎาคม","สิงหาคม","กันยายน","ตุลาคม","พฤศจิกายน","ธันวาคม"
   ];
 
-  const DEFAULT_TYPES = [
-    {id:'t1', label:'เลิก4โมง', start:'08:00', end:'16:00', color:'#e2604f', payMode:'hourly', rate:0},
-    {id:'t2', label:'เลิก2ทุ่ม', start:'12:00', end:'20:00', color:'#1f8a82', payMode:'hourly', rate:0},
-    {id:'t3', label:'เลิก4ทุ่ม', start:'22:00', end:'06:00', color:'#3e4e92', payMode:'hourly', rate:0},
-    {id:'t4', label:'oncall mri', start:'09:00', end:'18:00', color:'#8b72b0', payMode:'hourly', rate:0}
-  ];
+  const DEFAULT_TYPES = [];
 
   const COLOR_PALETTE = [
     '#e2604f','#1f8a82','#3e4e92','#8b72b0',
@@ -17,7 +12,7 @@
   ];
 
   // เพิ่ม: ตัวเลือกเวลาแจ้งเตือนล่วงหน้า (นาที)
-  const LEAD_OPTIONS = [[10,'10 นาที'],[30,'30 นาที'],[60,'1 ชั่วโมง'],[1440,'1 วัน']];
+  const LEAD_OPTIONS = [[15,'15 นาที'],[30,'30 นาที'],[60,'1 ชั่วโมง'],[180,'3 ชั่วโมง'],[1440,'1 วัน'],[10080,'7 วัน']];
 
   const board = document.getElementById('board');
   const monthLabel = document.getElementById('monthLabel');
@@ -107,20 +102,24 @@
     };
   }
 
+  
   function loadTypes(){
     try{
       const raw = localStorage.getItem('shift-types');
       const parsed = raw ? JSON.parse(raw) : null;
 
-      if(Array.isArray(parsed) && parsed.length > 0){
+      // ถ้ามีข้อมูลเดิม ให้โหลดข้อมูลนั้น
+      if(Array.isArray(parsed)){
         return parsed.map(normalizeType);
       }
 
-      return JSON.parse(JSON.stringify(DEFAULT_TYPES)).map(normalizeType);
+      // ถ้าไม่มีข้อมูล ให้เริ่มต้นด้วยรายการว่าง
+      return DEFAULT_TYPES.map(normalizeType);
     }catch(e){
-      return JSON.parse(JSON.stringify(DEFAULT_TYPES)).map(normalizeType);
+      return DEFAULT_TYPES.map(normalizeType);
     }
   }
+
 
   function saveTypes(){
     try{
@@ -986,6 +985,47 @@
       Notification.requestPermission();
     }
   }
+
+  // ลบนัดหมายรายการนี้
+  evDelete.addEventListener('click', () => {
+    if (!pendingEvKey || !pendingEvId) return;
+
+    events[pendingEvKey] = (events[pendingEvKey] || [])
+      .filter(ev => ev.id !== pendingEvId);
+
+    if (events[pendingEvKey].length === 0) {
+      delete events[pendingEvKey];
+    }
+
+    saveEvents();
+    closeEventModal();
+    render();
+  });
+
+  // ลบนัดหมายทั้งหมดที่อยู่ในชุดเดียวกัน
+  evDeleteAll.addEventListener('click', () => {
+    if (!pendingEvKey || !pendingEvId) return;
+
+    const ev = (events[pendingEvKey] || [])
+      .find(item => item.id === pendingEvId);
+
+    if (!ev) return;
+
+    if (ev.groupId) {
+      removeGroup(ev.groupId);
+    } else {
+      events[pendingEvKey] = (events[pendingEvKey] || [])
+        .filter(item => item.id !== pendingEvId);
+
+      if (events[pendingEvKey].length === 0) {
+        delete events[pendingEvKey];
+      }
+    }
+
+    saveEvents();
+    closeEventModal();
+    render();
+  });
 
   shiftNotify.addEventListener('change', () => {
     if(shiftNotify.checked) askNotifyPermission();
