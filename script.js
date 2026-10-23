@@ -844,7 +844,7 @@
         picker.addEventListener('change', () => {
         if (!picker.value) return;
 
-        t[property] = picker.value;
+        type[property] = picker.value;
         saveTypes();
         });
 
